@@ -11,11 +11,9 @@ export default function Layout({children}:{children:React.ReactNode}){
           
     
           {/* Main content area, where page content will be rendered */}
-            <main className="flex p-20  justify-center items-center h-full">
-              <div className="border-2 border-gray-600  border-solid rounded-lg shadow-lg p-6 bg-white w-full max-w-4xl">
+            <main className="flex p-25  justify-center items-center h-full">
                 
             {children}
-            </div>
           </main>
         </div>
         </body>

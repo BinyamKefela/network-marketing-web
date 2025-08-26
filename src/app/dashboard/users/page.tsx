@@ -89,7 +89,7 @@ function DataTable() {
         />
 
         
-        <UserModal IsOpen={false}/>
+        <UserModal IsOpen={false} children={UserForm} title='User registration' />
       </div>
 
       

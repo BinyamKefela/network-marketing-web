@@ -33,6 +33,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { NavNetworking } from "./nav-networking"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
 
 // This is sample data.
 const data = {
@@ -180,7 +182,11 @@ const data = {
     },
     {name:"logout",
       url:"#",
-      icon:LogOutIcon
+      icon:LogOutIcon,
+      onClick: () => {
+        Cookies.remove("token")
+        window.location.href = "/auth/login"
+      }
     },
   ],
 }

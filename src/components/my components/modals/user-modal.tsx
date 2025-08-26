@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 
-export default function UserModal({IsOpen,children,title}: {IsOpen:boolean,children:React.ReactNode,title:string}) {
+export default function UserModal({IsOpen,children,title}: {IsOpen:boolean,children:any,title:string}) {
   const [isOpen, setIsOpen] = useState(IsOpen);
 
   return (
     <div >
-      {/* Create Button */}
+      {/* Create Butt on */}
       <button
         onClick={() => setIsOpen(true)}
         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 whitespace-nowrap"
