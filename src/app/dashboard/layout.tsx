@@ -1,32 +1,46 @@
+"use client"; // <--- Add this line
+
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/ui/theme-toggle";
-import { Children } from "react";
+import { LogOutIcon } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { logoutUser } from "../auth/login/api";
 
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {  
-  return (
-<ThemeProvider 
-        attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange>
-        
-        <SidebarProvider>
-          <AppSidebar/>
-          <main>
-            <SidebarTrigger />
-            <ModeToggle/>
-            <div className="flex flex-1 items-center justify-center">
-            {children}
-            </div>
-            </main>
+}>) {
+  const router = useRouter();
 
-            </SidebarProvider>
-            </ThemeProvider >);
+  const handleLogout = () => {
+    logoutUser();
+    // Redirect the user after they have been logged out.
+    router.push('/auth/login');
+  };
+
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange>
+      <SidebarProvider>
+        <AppSidebar />
+        <main>
+          <SidebarTrigger />
+          <ModeToggle />
+          <div onClick={handleLogout}>
+            <LogOutIcon />
+          </div>
+          <div className="flex flex-1 items-center justify-center">
+            {children}
+          </div>
+        </main>
+      </SidebarProvider>
+    </ThemeProvider>
+  );
 }

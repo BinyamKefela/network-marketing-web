@@ -39,5 +39,6 @@ export async function  loginUser(email: string, password: string) {
 export function logoutUser() {
     Cookies.remove('token');
     
+    
 }
 
