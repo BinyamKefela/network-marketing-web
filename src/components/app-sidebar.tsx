@@ -45,17 +45,17 @@ const data = {
   },
   teams: [
     {
-      name: "ANT Inc",
+      name: "Fast network Marketing",
       logo: AntennaIcon,
       plan: "Enterprise",
     },
     {
-      name: "ANT Inc",
+      name: "Fast network Marketing",
       logo: Antenna,
       plan: "Startup",
     },
     {
-      name: "Evil Corp.",
+      name: "Fast network Marketing",
       logo: Command,
       plan: "Free",
     },
@@ -143,17 +143,22 @@ const data = {
       url:"/dashboard/users",
       icon:PersonStanding
     },
-    {name:"staff",
-      url:"/dashboard/staff",
+    {name:"training",
+      url:"/dashboard/training",
       icon:PersonStanding
     },
     {
-      name: "promoters",
-      url: "/auth/login",
+      name: "package",
+      url: "/dashboard/package",
+      icon: Frame,
+    },
+    {
+      name: "category",
+      url: "/dashboard/category",
       icon: Frame,
     },
     {name:"products",
-      url:"#",
+      url:"/dashboard/products",
       icon:BoxIcon
     },
     {

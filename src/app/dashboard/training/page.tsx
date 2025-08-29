@@ -8,32 +8,28 @@ import { getAuthToken } from "@/app/auth/login/api";
 import { toast } from "react-toastify";
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // ✅ change to your Django endpoint
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // 🔹 your Django endpoint
 
-// ✅ Zod schema for validation
-const categorySchema = z.object({
+// ✅ Zod validation schema
+const trainingSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  description: z.string().optional(),
 });
 
-type CategoryFormData = z.infer<typeof categorySchema>;
+type TrainingFormData = z.infer<typeof trainingSchema>;
 
-type Category = {
+type Training = {
   id: number;
   name: string;
-  description?: string;
   created_at: string;
   updated_at: string;
 };
 
-export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+export default function TrainingsPage() {
+  const [trainings, setTrainings] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Category | null>(null);
-  const [modalType, setModalType] = useState<
-    "add" | "edit" | "view" | "delete" | null
-  >(null);
-  const [button_clicked, setButtonClicked] = useState(false);
+  const [selected, setSelected] = useState<Training | null>(null);
+  const [modalType, setModalType] = useState<"add" | "edit" | "view" | "delete" | null>(null);
+  const [buttonClicked, setButtonClicked] = useState(false);
 
   // 🔎 Search + Pagination
   const [search, setSearch] = useState("");
@@ -47,11 +43,11 @@ export default function CategoriesPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  // ✅ Fetch categories
-  const fetchCategories = async () => {
+  // ✅ Fetch trainings
+  const fetchTrainings = async () => {
     setLoading(true);
     try {
-      const url = `${BASE_URL}/get_categories?page=${page}&search=${encodeURIComponent(
+      const url = `${BASE_URL}/get_trainings?page=${page}&search=${encodeURIComponent(
         debouncedSearch
       )}`;
       const res = await fetch(url, {
@@ -64,21 +60,21 @@ export default function CategoriesPage() {
 
       const data = await res.json();
       if (res.status === 200) {
-        setCategories(data.data || data.results || []);
+        setTrainings(data.data || data.results || []);
         setTotalPages(data.total_pages || 1);
       } else {
-        toast.error(data.error || "Failed to load categories");
+        toast.error(data.error || "Failed to load trainings");
       }
     } catch {
-      toast.error("Couldn't fetch data");
+      toast.error("Couldn't fetch trainings");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔁 Fetch when page or debouncedSearch changes
+  // 🔁 Refetch when page or debouncedSearch changes
   useEffect(() => {
-    fetchCategories();
+    fetchTrainings();
   }, [page, debouncedSearch]);
 
   // ✅ React Hook Form
@@ -87,18 +83,15 @@ export default function CategoriesPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema),
+  } = useForm<TrainingFormData>({
+    resolver: zodResolver(trainingSchema),
   });
 
-  const handleOpen = (type: typeof modalType, category?: Category) => {
+  const handleOpen = (type: typeof modalType, training?: Training) => {
     setModalType(type);
-    setSelected(category || null);
-    if (category) {
-      reset({
-        name: category.name,
-        description: category.description,
-      });
+    setSelected(training || null);
+    if (training) {
+      reset({ name: training.name });
     } else {
       reset({});
     }
@@ -111,11 +104,11 @@ export default function CategoriesPage() {
   };
 
   // ✅ Create / Update
-  const onSubmit = async (data: CategoryFormData) => {
+  const onSubmit = async (data: TrainingFormData) => {
     setButtonClicked(true);
-    if (modalType === "add") {
-      try {
-        let result = await fetch(BASE_URL + "/post_category", {
+    try {
+      if (modalType === "add") {
+        let result = await fetch(BASE_URL + "/post_training", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -123,16 +116,10 @@ export default function CategoriesPage() {
           },
           body: JSON.stringify(data),
         });
-        if (result.status == 201) toast.success("Created category successfully");
-        else toast.error("Failed to create category");
-      } catch {
-        toast.error("Couldn't create category");
-      } finally {
-        setButtonClicked(false);
-      }
-    } else if (modalType === "edit" && selected) {
-      try {
-        let result = await fetch(`${BASE_URL}/update_category/${selected.id}`, {
+        if (result.status === 201) toast.success("Created training successfully");
+        else toast.error("Failed to create training");
+      } else if (modalType === "edit" && selected) {
+        let result = await fetch(`${BASE_URL}/update_training/${selected.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -140,61 +127,56 @@ export default function CategoriesPage() {
           },
           body: JSON.stringify(data),
         });
-        if (result.status == 200) toast.success("Updated category successfully");
-        else toast.error("Failed to update category");
-      } catch {
-        toast.error("Couldn't update category");
-      } finally {
-        setButtonClicked(false);
+        if (result.status === 200) toast.success("Updated training successfully");
+        else toast.error("Failed to update training");
       }
+      await fetchTrainings();
+      handleClose();
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setButtonClicked(false);
     }
-    await fetchCategories();
-    handleClose();
   };
 
   // ✅ Delete
   const handleDelete = async () => {
     if (selected) {
       try {
-        let result = await fetch(`${BASE_URL}/delete_category/${selected.id}`, {
+        let result = await fetch(`${BASE_URL}/delete_training/${selected.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${getAuthToken()}`,
           },
         });
-        if (result.status === 204) toast.success("Category deleted");
-        else toast.error("Failed to delete category");
+        if (result.status === 204) toast.success("Deleted training successfully");
+        else toast.error("Failed to delete training");
       } catch {
-        toast.error("Couldn't delete category");
+        toast.error("Error deleting training");
       }
-      await fetchCategories();
+      await fetchTrainings();
       handleClose();
     }
   };
 
-  // 🔢 Pagination buttons (max 5, current centered)
+  // 🔢 Pagination (5 buttons centered)
   const getPageNumbers = () => {
     let start = Math.max(1, page - 2);
     let end = Math.min(totalPages, page + 2);
-
     if (page <= 2) end = Math.min(5, totalPages);
     if (page >= totalPages - 1) start = Math.max(totalPages - 4, 1);
-
-    return Array.from(
-      { length: Math.max(0, end - start + 1) },
-      (_, i) => start + i
-    );
+    return Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
+        <h1 className="text-2xl font-bold">Trainings</h1>
         <button
           onClick={() => handleOpen("add")}
           className="px-4 shadow-lg py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
         >
-          + Add Category
+          + Add Training
         </button>
       </div>
 
@@ -202,7 +184,7 @@ export default function CategoriesPage() {
       <div className="mb-4 flex justify-between items-center gap-3">
         <input
           type="text"
-          placeholder="Search categories..."
+          placeholder="Search trainings..."
           value={search}
           onChange={(e) => {
             setPage(1);
@@ -218,49 +200,48 @@ export default function CategoriesPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="w-full justify-center items-center">
+        <div className="w-full">
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead>
               <tr className="bg-gray-100">
                 <th className="p-2 text-sm px-7">Name</th>
-                <th className="p-2 text-sm px-7">Description</th>
                 <th className="p-2 text-sm px-7">Created At</th>
+                <th className="p-2 text-sm px-7">Updated At</th>
                 <th className="p-2 text-sm px-7">Actions</th>
               </tr>
             </thead>
-
-            {categories.length === 0 ? (
-              <tbody>
+            <tbody>
+              {trainings.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="text-center py-3 px-7">
-                    No items...
+                    No trainings...
                   </td>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {categories.map((c) => (
-                  <tr key={c.id} className="text-center">
-                    <td className="px-7 py-3 text-sm">{c.name}</td>
-                    <td className="px-7 py-3 text-sm">{c.description || "-"}</td>
+              ) : (
+                trainings.map((t) => (
+                  <tr key={t.id} className="text-center">
+                    <td className="px-7 py-3 text-sm">{t.name}</td>
                     <td className="px-7 py-3 text-sm">
-                      {new Date(c.created_at).toLocaleDateString()}
+                      {new Date(t.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-7 py-3 text-sm">
+                      {new Date(t.updated_at).toLocaleString()}
                     </td>
                     <td className="px-7 py-3 flex justify-center gap-2">
-                      <button onClick={() => handleOpen("view", c)}>
+                      <button onClick={() => handleOpen("view", t)}>
                         <EyeIcon size={20} />
                       </button>
-                      <button onClick={() => handleOpen("edit", c)}>
+                      <button onClick={() => handleOpen("edit", t)}>
                         <PencilIcon size={20} />
                       </button>
-                      <button onClick={() => handleOpen("delete", c)}>
+                      <button onClick={() => handleOpen("delete", t)}>
                         <TrashIcon size={20} />
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            )}
+                ))
+              )}
+            </tbody>
           </table>
 
           {/* 🔢 Pagination controls */}
@@ -272,7 +253,6 @@ export default function CategoriesPage() {
             >
               Prev
             </button>
-
             {getPageNumbers().map((p) => (
               <button
                 key={p}
@@ -284,7 +264,6 @@ export default function CategoriesPage() {
                 {p}
               </button>
             ))}
-
             <button
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
@@ -298,31 +277,29 @@ export default function CategoriesPage() {
 
       {/* ✅ Modal */}
       {modalType && (
-        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative h-[70%] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative">
             <button
               onClick={handleClose}
-              className="absolute font-bold top-5 hover:text-black text-xl right-2 text-gray-600"
+              className="absolute top-3 right-3 text-xl font-bold text-gray-600"
             >
               x
             </button>
 
             {modalType === "view" && selected && (
               <div className="flex flex-col gap-y-3">
-                <h2 className="text-xl font-bold mb-4">Category details</h2>
+                <h2 className="text-xl font-bold mb-4">Training details</h2>
                 <p><strong>Name:</strong> {selected.name}</p>
-                <p><strong>Description:</strong> {selected.description || "-"}</p>
                 <p><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
                 <p><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
               </div>
             )}
 
             {(modalType === "add" || modalType === "edit") && (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full p-2">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <h2 className="text-xl font-bold mb-4">
-                  {modalType === "add" ? "Add Category" : "Edit Category"}
+                  {modalType === "add" ? "Add Training" : "Edit Training"}
                 </h2>
-
                 <div>
                   <label className="text-sm">Name</label>
                   <input
@@ -333,31 +310,22 @@ export default function CategoriesPage() {
                     <p className="text-red-500 text-sm">{errors.name.message}</p>
                   )}
                 </div>
-
-                <div>
-                  <label className="text-sm">Description</label>
-                  <textarea
-                    {...register("description")}
-                    className="w-full border p-2 rounded-lg"
-                  />
-                </div>
-
                 <button
                   type="submit"
                   className="px-3 py-1 bg-blue-600 text-white rounded-lg"
                 >
-                  {button_clicked === false
-                    ? modalType === "add"
-                      ? "Add"
-                      : "Update"
-                    : "loading..."}
+                  {buttonClicked
+                    ? "loading..."
+                    : modalType === "add"
+                    ? "Add"
+                    : "Update"}
                 </button>
               </form>
             )}
 
             {modalType === "delete" && selected && (
               <div>
-                <h2 className="text-xl font-bold mb-4">Delete Category</h2>
+                <h2 className="text-xl font-bold mb-4">Delete Training</h2>
                 <p>
                   Are you sure you want to delete{" "}
                   <strong>{selected.name}</strong>?
@@ -367,7 +335,7 @@ export default function CategoriesPage() {
                     onClick={handleDelete}
                     className="px-4 py-2 bg-red-600 text-white rounded"
                   >
-                    {button_clicked === false ? "Yes, Delete" : "loading..."}
+                    {buttonClicked ? "loading..." : "Yes, Delete"}
                   </button>
                   <button
                     onClick={handleClose}

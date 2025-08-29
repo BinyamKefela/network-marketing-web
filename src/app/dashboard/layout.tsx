@@ -36,7 +36,7 @@ export default function Layout({
           <div onClick={handleLogout}>
             <LogOutIcon />
           </div>
-          <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
             {children}
           </div>
         </main>

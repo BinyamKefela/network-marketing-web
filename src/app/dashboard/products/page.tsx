@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { headers } from "next/headers";
 import { getAuthToken } from "@/app/auth/login/api";
 import { toast } from "react-toastify";
+import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // 🔹 change to your Django endpoint
 
@@ -26,7 +27,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 type Product = {
   id: number;
   name: string;
-  category: string;
+  category: number;
   description?: string;
   quantity: number;
   price: number;
@@ -41,51 +42,69 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Product | null>(null);
   const [modalType, setModalType] = useState<"add" | "edit" | "view" | "delete" | null>(null);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [button_clicked, setButtonClicked] = useState(false);
 
-  // ✅ Fetch all products
+  // 🔎 Search + Pagination
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // ⏱️ Debounce search (1s after typing stops)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 1000);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // ✅ Fetch products (with search + pagination)
   const fetchProducts = async () => {
     setLoading(true);
-    try{
-    const res = await fetch(BASE_URL+"/get_products",{
-        method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getAuthToken()}`
-        }
-    });
-    
-    const data = await res.json();
-    if(res.status===200){
-    setProducts(data.data);
-    setLoading(false);}
-    else{
-        toast.error(data.error);
-    }
-}
-catch(error){
-    toast.error("couldn't fetch data")
-}
-finally{
-    setLoading(false)
-    
-}
-  };
-
-  const fetchCategories = async () => {
-    setLoading(true);
     try {
-      const res = await fetch(BASE_URL + "/get_categories", { // 
-        method: 'GET',
+      const url = `${BASE_URL}/get_products?page=${page}&search=${encodeURIComponent(
+        debouncedSearch
+      )}`;
+      const res = await fetch(url, {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
       });
 
       const data = await res.json();
       if (res.status === 200) {
-        setCategories(data.data || []); // ⭐ Assuming data.results is the array of categories
+        setProducts(data.data || data.results || []);
+        setTotalPages(data.total_pages || 1);
+      } else {
+        toast.error(data.error || "Failed to load products");
+      }
+    } catch {
+      toast.error("Couldn't fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔁 Fetch when page or debouncedSearch changes
+  useEffect(() => {
+    fetchProducts();
+  }, [page, debouncedSearch]);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(BASE_URL + "/get_categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.status === 200) {
+        setCategories(data.data || []);
       } else {
         toast.error(data.error);
       }
@@ -96,10 +115,7 @@ finally{
     }
   };
 
-
   useEffect(() => {
-    //toast.error("gevew")
-    fetchProducts();
     fetchCategories();
   }, []);
 
@@ -139,27 +155,40 @@ finally{
 
   // ✅ Create / Update
   const onSubmit = async (data: ProductFormData) => {
+    setButtonClicked(true);
     if (modalType === "add") {
-      try{
-        let result=await fetch(BASE_URL+"/post_product", {
-        method: "POST",
-        headers: { "Content-Type": "application/json","Authorzation":`Bearer ${getAuthToken()}` },
-        body: JSON.stringify(data),
-      });
-      if(result.status==201)
-        toast.success("created text successfully")
-       else
-        toast.error("failed to create product")
-    }
-    catch(error){
-        toast.error("couldn't create product")
-    }
+      try {
+        let result = await fetch(BASE_URL + "/post_product", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+          body: JSON.stringify(data),
+        });
+        if (result.status == 201) toast.success("created product successfully");
+        else toast.error("failed to create product");
+      } catch (error) {
+        toast.error("couldn't create product");
+      } finally {
+        setButtonClicked(false);
+      }
     } else if (modalType === "edit" && selected) {
-      await fetch(`${BASE_URL}/update_product/${selected.id}/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json","Authorzation":`Bearer ${getAuthToken()}` },
-        body: JSON.stringify(data),
-      });
+      try {
+        let result = await fetch(`${BASE_URL}/update_product/${selected.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getAuthToken()}`,
+          },
+          body: JSON.stringify(data),
+        });
+        if (result.status == 200) toast.success("updated product succesfully");
+      } catch (error) {
+        toast.error("failed to update product");
+      } finally {
+        setButtonClicked(false);
+      }
     }
     await fetchProducts();
     handleClose();
@@ -176,6 +205,17 @@ finally{
     }
   };
 
+  // 🔢 Pagination buttons (max 5, current centered)
+  const getPageNumbers = () => {
+    let start = Math.max(1, page - 2);
+    let end = Math.min(totalPages, page + 2);
+
+    if (page <= 2) end = Math.min(5, totalPages);
+    if (page >= totalPages - 1) start = Math.max(totalPages - 4, 1);
+
+    return Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -188,60 +228,118 @@ finally{
         </button>
       </div>
 
+      {/* 🔎 Search */}
+      <div className="mb-4 flex justify-between items-center gap-3">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => {
+            setPage(1); // reset to page 1 when search changes
+            setSearch(e.target.value);
+          }}
+          className="border px-3 py-2 rounded-lg w-1/3"
+        />
+        <div className="text-sm text-gray-600">
+          Page {page} of {totalPages}
+        </div>
+      </div>
+
       {loading ? (
         <p>Loading...</p>
       ) : (
         <div className="w-full justify-center items-center">
-        <table className="w-full border border-gray-300 rounded shadow-xs">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border text-sm px-7">Name</th>
-              <th className="p-2 border text-sm px-7">Category</th>
-              <th className="p-2 border text-sm px-7">Quantity</th>
-              <th className="p-2 border text-sm px-7">Price</th>
-              <th className="p-2 border text-sm px-7">Service</th>
-              <th className="p-2 border text-sm px-7">Actions</th>
-            </tr>
-          </thead>
-          
-            {products.length==0?(<p>No items</p>):
-            <tbody> {products?.map((p) => (
-              <tr key={p.id} className="text-center">
-                <td className="border px-7 text-sm">{p.name}</td>
-                <td className="border px-7 text-sm">{p.category}</td>
-                <td className="border px-7 text-sm">{p.quantity}</td>
-                <td className="border px-7 text-sm">{p.price}</td>
-                <td className="border px-7 text-sm">{p.is_service ? "Yes" : "No"}</td>
-                <td className="border px-7 flex justify-center gap-2">
-                  <button
-                    className="px-2 py-1 bg-green-500 text-white rounded"
-                    onClick={() => handleOpen("view", p)}
-                  >
-                    View
-                  </button>
-                  <button
-                    className="px-2 py-1 bg-yellow-500 text-white rounded"
-                    onClick={() => handleOpen("edit", p)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="px-2 py-1 bg-red-600 text-white rounded"
-                    onClick={() => handleOpen("delete", p)}
-                  >
-                    Delete
-                  </button>
-                </td>
+          <table className="min-w-full border border-gray-300 rounded shadow-xs">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-2  text-sm px-7">Name</th>
+                <th className="p-2  text-sm px-7">Category</th>
+                <th className="p-2  text-sm px-7">Quantity</th>
+                <th className="p-2  text-sm px-7">Price</th>
+                <th className="p-2  text-sm px-7">Service</th>
+                <th className="p-2  text-sm px-7">Actions</th>
               </tr>
-            ))}</tbody>}
-          
-        </table>
+            </thead>
+
+            {products.length == 0 ? (
+              <tbody>
+                <tr>
+                  <td colSpan={6} className="text-center py-3 px-7">
+                    No items...
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <tbody>
+                {products?.map((p) => (
+                  <tr key={p.id} className="text-center">
+                    <td className=" px-7 py-3 text-sm">{p.name}</td>
+                    <td className=" px-7 py-3 text-sm">{p.category}</td>
+                    <td className=" px-7 py-3 text-sm">{p.quantity}</td>
+                    <td className=" px-7 py-3 text-sm">{p.price}</td>
+                    <td className=" px-7 py-3 text-sm">{p.is_service ? "Yes" : "No"}</td>
+                    <td className=" px-7 py-3 flex justify-center gap-2">
+                      <button
+                        className="text-xs rounded"
+                        onClick={() => handleOpen("view", p)}
+                      >
+                        <EyeIcon size={20} />
+                      </button>
+                      <button
+                        className="text-xs rounded"
+                        onClick={() => handleOpen("edit", p)}
+                      >
+                        <PencilIcon size={20} />
+                      </button>
+                      <button
+                        className="text-xs rounded"
+                        onClick={() => handleOpen("delete", p)}
+                      >
+                        <TrashIcon size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
+          </table>
+
+          {/* 🔢 Pagination controls */}
+          <div className="flex justify-center items-center gap-2 mt-4">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {getPageNumbers().map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`px-3 py-1 border rounded ${
+                  p === page ? "bg-blue-600 text-white" : ""
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
       {/* ✅ Modal */}
       {modalType && (
-        <div className=" shadow-2xl rounded-lg fixed inset-0  bg-opacity-500 flex items-center justify-center">
+        <div className=" shadow-2xl rounded-xl fixed inset-0 bg-black/50  bg-opacity-500 flex items-center justify-center">
           <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative h-[70%] overflow-y-auto items-center justify-center">
             <button
               onClick={handleClose}
@@ -251,8 +349,8 @@ finally{
             </button>
 
             {modalType === "view" && selected && (
-              <div>
-                <h2 className="text-xl font-bold mb-4">View Product</h2>
+              <div className="flex flex-col justify-center gap-y-4">
+                <h2 className="text-xl font-bold mb-4">Product details</h2>
                 <p><strong>Name:</strong> {selected.name}</p>
                 <p><strong>Category:</strong> {selected.category}</p>
                 <p><strong>Description:</strong> {selected.description}</p>
@@ -280,18 +378,16 @@ finally{
                   )}
                 </div>
 
-                
-
                 <div className="w-[30%]">
                   <label htmlFor="category" className="text-sm">Category</label>
                   <select
                     id="category"
-                    {...register("category", { valueAsNumber: true })} // ⭐ Register with valueAsNumber
+                    {...register("category", { valueAsNumber: true })}
                     className="w-full border p-2 rounded-lg"
-                    defaultValue="" // Set a default empty value
+                    defaultValue=""
                   >
                     <option value="" disabled>Select a category</option>
-                    {categories.map((cat) => (
+                    {categories.map((cat: any) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}
                       </option>
@@ -351,7 +447,7 @@ finally{
                   type="submit"
                   className="px-3 py-1 bg-blue-600 text-white rounded-lg"
                 >
-                  {modalType === "add" ? "Add" : "Update"}
+                  {button_clicked===false?(modalType === "add" ? "Add" : "Update"):"loading..."}
                 </button>
               </form>
             )}
@@ -367,7 +463,7 @@ finally{
                     onClick={handleDelete}
                     className="px-4 py-2 bg-red-600 text-white rounded"
                   >
-                    Yes, Delete
+                    {button_clicked===false?"Yes, Delete":"loading..."}
                   </button>
                   <button
                     onClick={handleClose}
