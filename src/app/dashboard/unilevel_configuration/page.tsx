@@ -9,50 +9,52 @@ import { getAuthToken } from "@/app/auth/login/api";
 import { toast } from "react-toastify";
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // 🔹 change to your Django endpoint
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// ✅ Zod validation schema (Training)
-const trainingSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  price: z.coerce.number().min(0, "Price must be >= 0"),
-  cost: z.coerce.number().min(0, "Cost must be >= 0"),
+// ✅ Zod validation schema for UnilevelConfiguration
+const unilevelSchema = z.object({
+  level: z.coerce.number().min(1, "Level must be at least 1"),
+  category: z.number().min(1, "Category is required"),
+  percentage: z.coerce.number().min(0, "Percentage must be >= 0").max(100, "Percentage cannot exceed 100"),
 });
 
-type TrainingFormData = z.infer<typeof trainingSchema>;
+type UnilevelFormData = z.infer<typeof unilevelSchema>;
 
-type Training = {
+type UnilevelConfiguration = {
   id: number;
-  name: string;
-  price: number;
-  cost: number;
+  level: number;
+  category: number;
+  category_name: string;
+  percentage: number;
   created_at: string;
   updated_at: string;
 };
 
-export default function TrainingsPage() {
-  const [trainings, setTrainings] = useState<Training[]>([]);
+export default function UnilevelConfigurationPage() {
+  const [configurations, setConfigurations] = useState<UnilevelConfiguration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Training | null>(null);
+  const [selected, setSelected] = useState<UnilevelConfiguration | null>(null);
   const [modalType, setModalType] = useState<"add" | "edit" | "view" | "delete" | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
   const [button_clicked, setButtonClicked] = useState(false);
 
-  // 🔎 Search + Pagination
+  // Search + Pagination
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // ⏱️ Debounce search (1s after typing stops)
+  // Debounce search (1s after typing stops)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 1000);
     return () => clearTimeout(t);
   }, [search]);
 
-  // ✅ Fetch trainings (with search + pagination)
-  const fetchTrainings = async () => {
+  // Fetch unilevel configurations (with search + pagination)
+  const fetchConfigurations = async () => {
     setLoading(true);
     try {
-      const url = `${BASE_URL}/get_trainings?page=${page}&search=${encodeURIComponent(
+      const url = `${BASE_URL}/get_unilevel_configurations?page=${page}&search=${encodeURIComponent(
         debouncedSearch
       )}`;
       const res = await fetch(url, {
@@ -65,10 +67,10 @@ export default function TrainingsPage() {
 
       const data = await res.json();
       if (res.status === 200) {
-        setTrainings(data.data || data.results || []);
+        setConfigurations(data.data || data.results || []);
         setTotalPages(data.total_pages || 1);
       } else {
-        toast.error(data.error || "Failed to load trainings");
+        toast.error(data.error || "Failed to load unilevel configurations");
       }
     } catch {
       toast.error("Couldn't fetch data");
@@ -77,10 +79,36 @@ export default function TrainingsPage() {
     }
   };
 
-  // 🔁 Fetch when page or debouncedSearch changes
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(BASE_URL + "/get_categories", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.status === 200) {
+        setCategories(data.data || []);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      toast.error("Couldn't fetch categories");
+    }
+  };
+
+  // Fetch when page or debouncedSearch changes
   useEffect(() => {
-    fetchTrainings();
+    fetchConfigurations();
   }, [page, debouncedSearch]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   // ✅ React Hook Form
   const {
@@ -88,21 +116,25 @@ export default function TrainingsPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TrainingFormData>({
-    resolver: zodResolver(trainingSchema),
+  } = useForm<UnilevelFormData>({
+    resolver: zodResolver(unilevelSchema),
   });
 
-  const handleOpen = (type: typeof modalType, training?: Training) => {
+  const handleOpen = (type: typeof modalType, config?: UnilevelConfiguration) => {
     setModalType(type);
-    setSelected(training || null);
-    if (training) {
+    setSelected(config || null);
+    if (config) {
       reset({
-        name: training.name,
-        price: training.price,
-        cost: training.cost,
+        level: config.level,
+        category: config.category,
+        percentage: config.percentage,
       });
     } else {
-      reset({});
+      reset({
+        level: 1,
+        category: 0,
+        percentage: 0,
+      });
     }
   };
 
@@ -113,11 +145,11 @@ export default function TrainingsPage() {
   };
 
   // ✅ Create / Update
-  const onSubmit = async (data: TrainingFormData) => {
+  const onSubmit = async (data: UnilevelFormData) => {
     setButtonClicked(true);
     if (modalType === "add") {
       try {
-        const result = await fetch(BASE_URL + "/post_training", {
+        let result = await fetch(BASE_URL + "/post_unilevel_configuration", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -125,16 +157,16 @@ export default function TrainingsPage() {
           },
           body: JSON.stringify(data),
         });
-        if (result.status == 201) toast.success("created training successfully");
-        else toast.error("failed to create training");
+        if (result.status == 201) toast.success("Created unilevel configuration successfully");
+        else toast.error("Failed to create unilevel configuration");
       } catch (error) {
-        toast.error("couldn't create training");
+        toast.error("Couldn't create unilevel configuration");
       } finally {
         setButtonClicked(false);
       }
     } else if (modalType === "edit" && selected) {
       try {
-        const result = await fetch(`${BASE_URL}/update_training/${selected.id}`, {
+        let result = await fetch(`${BASE_URL}/update_unilevel_configuration/${selected.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -142,14 +174,14 @@ export default function TrainingsPage() {
           },
           body: JSON.stringify(data),
         });
-        if (result.status == 200) toast.success("updated training succesfully");
+        if (result.status == 200) toast.success("Updated unilevel configuration successfully");
       } catch (error) {
-        toast.error("failed to update training");
+        toast.error("Failed to update unilevel configuration");
       } finally {
         setButtonClicked(false);
       }
     }
-    await fetchTrainings();
+    await fetchConfigurations();
     handleClose();
   };
 
@@ -157,17 +189,19 @@ export default function TrainingsPage() {
   const handleDelete = async () => {
     if (selected) {
       try {
-        await fetch(`${BASE_URL}/delete_training/${selected.id}/`, {
+        let result = await fetch(`${BASE_URL}/delete_unilevel_configuration/${selected.id}`, {
           method: "DELETE",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${getAuthToken()}`,
           },
         });
-        toast.success("training deleted");
-      } catch {
-        toast.error("failed to delete training");
+        if (result.status == 200) toast.success("Deleted unilevel configuration successfully");
+        else toast.error("Failed to delete unilevel configuration");
+      } catch (error) {
+        toast.error("Couldn't delete unilevel configuration");
       }
-      await fetchTrainings();
+      await fetchConfigurations();
       handleClose();
     }
   };
@@ -186,20 +220,20 @@ export default function TrainingsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-lg font-bold">Trainings</h1>
+        <h1 className="text-lg font-bold">Unilevel Configurations</h1>
         <button
           onClick={() => handleOpen("add")}
           className="px-4 cursor-pointer shadow-lg py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700"
         >
-          + Add Training
+          + Add Configuration
         </button>
       </div>
 
-      {/* 🔎 Search */}
+      {/* Search */}
       <div className="mb-4 flex justify-between items-center gap-3">
         <input
           type="text"
-          placeholder="Search trainings..."
+          placeholder="Search configurations..."
           value={search}
           onChange={(e) => {
             setPage(1); // reset to page 1 when search changes
@@ -219,14 +253,14 @@ export default function TrainingsPage() {
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2  text-xs px-7">Name</th>
-                <th className="p-2  text-xs px-7">Price</th>
-                <th className="p-2  text-xs px-7">Cost</th>
-                <th className="p-2  text-xs px-7">Actions</th>
+                <th className="p-2 text-xs px-7">Level</th>
+                <th className="p-2 text-xs px-7">Category</th>
+                <th className="p-2 text-xs px-7">Percentage</th>
+                <th className="p-2 text-xs px-7">Actions</th>
               </tr>
             </thead>
 
-            {trainings.length == 0 ? (
+            {configurations.length == 0 ? (
               <tbody>
                 <tr>
                   <td colSpan={4} className="text-center text-xs py-3 px-7">
@@ -236,27 +270,27 @@ export default function TrainingsPage() {
               </tbody>
             ) : (
               <tbody>
-                {trainings?.map((t) => (
-                  <tr key={t.id} className="text-center">
-                    <td className=" px-7 py-3 text-xs">{t.name}</td>
-                    <td className=" px-7 py-3 text-xs">{t.price}</td>
-                    <td className=" px-7 py-3 text-xs">{t.cost}</td>
-                    <td className=" px-7 py-3 flex justify-center gap-2">
+                {configurations?.map((config) => (
+                  <tr key={config.id} className="text-center">
+                    <td className="px-7 py-3 text-xs text-gray-500">Level {config.level}</td>
+                    <td className="px-7 py-3 text-xs text-gray-500">{config.category_name}</td>
+                    <td className="px-7 py-3 text-xs text-gray-500">{config.percentage}%</td>
+                    <td className="px-7 py-3 flex justify-center gap-2">
                       <button
                         className="text-xs rounded"
-                        onClick={() => handleOpen("view", t)}
+                        onClick={() => handleOpen("view", config)}
                       >
                         <EyeIcon size={15} className="hover:text-indigo-600 cursor-pointer" />
                       </button>
                       <button
                         className="text-xs rounded"
-                        onClick={() => handleOpen("edit", t)}
+                        onClick={() => handleOpen("edit", config)}
                       >
                         <PencilIcon size={15} className="hover:text-indigo-600 cursor-pointer" />
                       </button>
                       <button
                         className="text-xs rounded"
-                        onClick={() => handleOpen("delete", t)}
+                        onClick={() => handleOpen("delete", config)}
                       >
                         <TrashIcon size={15} className="hover:text-indigo-600 cursor-pointer" />
                       </button>
@@ -302,8 +336,8 @@ export default function TrainingsPage() {
 
       {/* ✅ Modal */}
       {modalType && (
-        <div className=" shadow-2xl rounded-xl fixed inset-0 bg-black/50  bg-opacity-500 flex items-center justify-center">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative  overflow-y-auto items-center justify-center">
+        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 bg-opacity-500 flex items-center justify-center">
+          <div className="bg-gray-50 p-6 rounded-lg w-1/2 max-h-screen overflow-y-auto relative">
             <button
               onClick={handleClose}
               className="absolute font-bold top-5 cursor-pointer hover:text-black text-xl right-2 text-gray-600"
@@ -312,60 +346,65 @@ export default function TrainingsPage() {
             </button>
 
             {modalType === "view" && selected && (
-              <div className="flex flex-col justify-center gap-y-4">
-                <h2 className="text-lg font-bold mb-4">Training details</h2>
-                <p className="text-sm"><strong>Name:</strong> {selected.name}</p>
-                <p className="text-sm"><strong>Price:</strong> {selected.price}</p>
-                <p className="text-sm"><strong>Cost:</strong> {selected.cost}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <h2 className="text-lg font-bold mb-4 col-span-2">Unilevel Configuration Details</h2>
+                <p className="text-sm"><strong>Level:</strong> {selected.level}</p>
+                <p className="text-sm"><strong>Category:</strong> {selected.category_name}</p>
+                <p className="text-sm"><strong>Percentage:</strong> {selected.percentage}%</p>
+                <p className="text-sm col-span-2"><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
+                <p className="text-sm col-span-2"><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
               </div>
             )}
 
             {(modalType === "add" || modalType === "edit") && (
-              <form onSubmit={handleSubmit(onSubmit)} className="  space-y-4 w-full p-2 justify-center items-center">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <h2 className="text-xl font-bold mb-4">
-                  {modalType === "add" ? "Add Training" : "Edit Training"}
+                  {modalType === "add" ? "Add Unilevel Configuration" : "Edit Unilevel Configuration"}
                 </h2>
-
-                <div className="flex  items-center gap-7">
-                  <div className="focus:ring-blue-500">
-                    <label className="text-xs">Name</label>
-                    <input
-                      {...register("name")}
-                      placeholder="training name"
-                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    />
-                    {errors.name && (
-                      <p className="text-red-500 text-xs">{errors.name.message}</p>
-                    )}
-                  </div>
-                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs">Price</label>
+                    <label className="text-xs">Level</label>
                     <input
                       type="number"
-                      step="0.01"
-                      {...register("price")}
-                      placeholder="price"
-                      className="w-full border text-xs focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 p-2 rounded-lg"
+                      {...register("level")}
+                      placeholder="Level"
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                     />
-                    {errors.price && (
-                      <p className="text-red-500 text-xs">{errors.price.message}</p>
+                    {errors.level && (
+                      <p className="text-red-500 text-xs">{errors.level.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="text-xs">Cost</label>
+                    <label className="text-xs">Category</label>
+                    <select
+                      {...register("category", { valueAsNumber: true })}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    >
+                      <option value="" selected>Select Category</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.category && (
+                      <p className="text-red-500 text-xs">{errors.category.message}</p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="text-xs">Percentage</label>
                     <input
                       type="number"
                       step="0.01"
-                      {...register("cost")}
-                      placeholder="cost"
-                      className="w-full border text-xs p-2 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 rounded-lg"
+                      {...register("percentage")}
+                      placeholder="Percentage"
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                     />
-                    {errors.cost && (
-                      <p className="text-red-500 text-xs">{errors.cost.message}</p>
+                    {errors.percentage && (
+                      <p className="text-red-500 text-xs">{errors.percentage.message}</p>
                     )}
                   </div>
                 </div>
@@ -381,9 +420,9 @@ export default function TrainingsPage() {
 
             {modalType === "delete" && selected && (
               <div className="flex flex-col">
-                <h2 className="text-md font-bold mb-4">Delete Training</h2>
+                <h2 className="text-md font-bold mb-4">Delete Unilevel Configuration</h2>
                 <p className="text-sm">
-                  Are you sure you want to delete <strong>{selected.name}</strong>?
+                  Are you sure you want to delete the configuration for Level {selected.level} - {selected.category_name}?
                 </p>
                 <div className="flex gap-4 mt-4">
                   <button

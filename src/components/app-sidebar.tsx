@@ -15,6 +15,8 @@ import {
   LogOutIcon,
   LucidePieChart,
   Map,
+  Package2Icon,
+  PenBoxIcon,
   PersonStanding,
   PieChart,
   Settings2,
@@ -143,14 +145,18 @@ const data = {
       url:"/dashboard/users",
       icon:PersonStanding
     },
+    {name:"configuration",
+      url:"/dashboard/configuration",
+      icon:Settings2
+    },
     {name:"training",
       url:"/dashboard/training",
-      icon:PersonStanding
+      icon:PenBoxIcon
     },
     {
       name: "package",
       url: "/dashboard/package",
-      icon: Frame,
+      icon: Package2Icon,
     },
     {
       name: "category",
@@ -160,6 +166,16 @@ const data = {
     {name:"products",
       url:"/dashboard/products",
       icon:BoxIcon
+    },
+    {
+      name:"commissions configuration",
+      url: "/dashboard/commission_configuration",
+      icon: GalleryVerticalEnd,
+    },
+    {
+      name:"unilevel configuration",
+      url: "/dashboard/unilevel_configuration",
+      icon: GalleryVerticalEnd,
     },
     {
       name: "Sales",
@@ -175,11 +191,7 @@ const data = {
       url: "#",
       icon: Map,
     },
-    {
-      name:"commissions configuration",
-      url: "#",
-      icon: GalleryVerticalEnd,
-    },
+    
     {
       name: "housing",
       url: "#",

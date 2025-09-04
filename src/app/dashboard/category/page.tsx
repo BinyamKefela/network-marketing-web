@@ -172,7 +172,7 @@ export default function CategoriesPage() {
     }
   };
 
-  // 🔢 Pagination buttons (max 5, current centered)
+  //  Pagination buttons (max 5, current centered)
   const getPageNumbers = () => {
     let start = Math.max(1, page - 2);
     let end = Math.min(totalPages, page + 2);
@@ -189,16 +189,16 @@ export default function CategoriesPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Categories</h1>
+        <h1 className="text-lg font-bold">Categories</h1>
         <button
           onClick={() => handleOpen("add")}
-          className="px-4 shadow-lg py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+          className="px-4 text-xs cursor-pointer  shadow-lg py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           + Add Category
         </button>
       </div>
 
-      {/* 🔎 Search */}
+      {/*  Search */}
       <div className="mb-4 flex justify-between items-center gap-3">
         <input
           type="text"
@@ -208,7 +208,7 @@ export default function CategoriesPage() {
             setPage(1);
             setSearch(e.target.value);
           }}
-          className="border px-3 py-2 rounded-lg w-1/3"
+          className="border text-xs px-3 py-2 rounded-lg w-1/3"
         />
         <div className="text-sm text-gray-600">
           Page {page} of {totalPages}
@@ -222,10 +222,10 @@ export default function CategoriesPage() {
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2 text-sm px-7">Name</th>
-                <th className="p-2 text-sm px-7">Description</th>
-                <th className="p-2 text-sm px-7">Created At</th>
-                <th className="p-2 text-sm px-7">Actions</th>
+                <th className="p-2 text-xs px-7">name</th>
+                <th className="p-2 text-xs px-7">description</th>
+                <th className="p-2 text-xs px-7">created At</th>
+                <th className="p-2 text-xs px-7">actions</th>
               </tr>
             </thead>
 
@@ -241,20 +241,20 @@ export default function CategoriesPage() {
               <tbody>
                 {categories.map((c) => (
                   <tr key={c.id} className="text-center">
-                    <td className="px-7 py-3 text-sm">{c.name}</td>
-                    <td className="px-7 py-3 text-sm">{c.description || "-"}</td>
-                    <td className="px-7 py-3 text-sm">
+                    <td className="px-7 py-3 text-xs text-gray-500">{c.name}</td>
+                    <td className="px-7 py-3 text-xs text-gray-500">{c.description || "-"}</td>
+                    <td className="px-7 py-3 text-xs text-gray-500">
                       {new Date(c.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-7 py-3 flex justify-center gap-2">
                       <button onClick={() => handleOpen("view", c)}>
-                        <EyeIcon size={20} />
+                        <EyeIcon size={15} className="hover:text-indigo-500 cursor-pointer" />
                       </button>
                       <button onClick={() => handleOpen("edit", c)}>
-                        <PencilIcon size={20} />
+                        <PencilIcon size={15} className="hover:text-indigo-500 cursor-pointer"  />
                       </button>
                       <button onClick={() => handleOpen("delete", c)}>
-                        <TrashIcon size={20} />
+                        <TrashIcon size={15} className="hover:text-indigo-500 cursor-pointer" />
                       </button>
                     </td>
                   </tr>
@@ -263,12 +263,12 @@ export default function CategoriesPage() {
             )}
           </table>
 
-          {/* 🔢 Pagination controls */}
+          {/* Pagination controls */}
           <div className="flex justify-center items-center gap-2 mt-4">
             <button
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 text-xs py-1 border cursor-pointer rounded disabled:opacity-50"
             >
               Prev
             </button>
@@ -277,7 +277,7 @@ export default function CategoriesPage() {
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`px-3 py-1 border rounded ${
+                className={`px-3 py-1 text-xs cursor-pointer border rounded ${
                   p === page ? "bg-blue-600 text-white" : ""
                 }`}
               >
@@ -288,7 +288,7 @@ export default function CategoriesPage() {
             <button
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 text-xs py-1 cursor-pointer border rounded disabled:opacity-50"
             >
               Next
             </button>
@@ -296,55 +296,59 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* ✅ Modal */}
+      {/*  Modal */}
       {modalType && (
         <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative h-[70%] overflow-y-auto">
+          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative  overflow-y-auto">
             <button
               onClick={handleClose}
-              className="absolute font-bold top-5 hover:text-black text-xl right-2 text-gray-600"
+              className="absolute font-bold top-5 hover:text-black text-xl cursor-pointer right-2 text-gray-600"
             >
               x
             </button>
 
             {modalType === "view" && selected && (
               <div className="flex flex-col gap-y-3">
-                <h2 className="text-xl font-bold mb-4">Category details</h2>
-                <p><strong>Name:</strong> {selected.name}</p>
-                <p><strong>Description:</strong> {selected.description || "-"}</p>
-                <p><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
-                <p><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
+                <h2 className="text-lg font-bold mb-4">Category details</h2>
+                <p className="text-sm"><strong>Name:</strong> {selected.name}</p>
+                <p className="text-sm"><strong>Description:</strong> {selected.description || "-"}</p>
+                <p className="text-sm"><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
+                <p className="text-sm"><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
               </div>
             )}
 
             {(modalType === "add" || modalType === "edit") && (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full p-2">
-                <h2 className="text-xl font-bold mb-4">
+                <h2 className="text-lg font-bold mb-4">
                   {modalType === "add" ? "Add Category" : "Edit Category"}
                 </h2>
 
-                <div>
-                  <label className="text-sm">Name</label>
+                <div className="flex flex-col">
+                  <label className="text-xs">Name</label>
                   <input
                     {...register("name")}
-                    className="w-full border p-2 rounded-lg"
+                    className="text-xs border p-2 rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" placeholder="category name"
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-sm">{errors.name.message}</p>
+                    <p className="text-red-500 text-xs">{errors.name.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="text-sm">Description</label>
+                  <label className="text-xs">Description</label>
                   <textarea
                     {...register("description")}
-                    className="w-full border p-2 rounded-lg"
+                    className="w-full border text-xs p-2 rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    placeholder="description..."
+                    cols={10}
+                    rows={8}
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="px-3 py-1 bg-blue-600 text-white rounded-lg"
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-900"
+                  disabled={button_clicked}
                 >
                   {button_clicked === false
                     ? modalType === "add"
@@ -357,7 +361,7 @@ export default function CategoriesPage() {
 
             {modalType === "delete" && selected && (
               <div>
-                <h2 className="text-xl font-bold mb-4">Delete Category</h2>
+                <h2 className="text-md text-xs font-bold mb-4">Delete Category</h2>
                 <p>
                   Are you sure you want to delete{" "}
                   <strong>{selected.name}</strong>?
@@ -365,13 +369,13 @@ export default function CategoriesPage() {
                 <div className="flex gap-4 mt-4">
                   <button
                     onClick={handleDelete}
-                    className="px-4 py-2 bg-red-600 text-white rounded"
+                    className="px-4 py-2 bg-red-600 text-white cursor-pointer text-xs rounded"
                   >
                     {button_clicked === false ? "Yes, Delete" : "loading..."}
                   </button>
                   <button
                     onClick={handleClose}
-                    className="px-4 py-2 bg-gray-400 text-white rounded"
+                    className="px-4 py-2 text-xs bg-gray-400 cursor-pointer text-white rounded"
                   >
                     Cancel
                   </button>

@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/ui/theme-toggle";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer/>
+        <Toaster/>
         <ReactQueryProvider>
           {children}
         </ReactQueryProvider>
