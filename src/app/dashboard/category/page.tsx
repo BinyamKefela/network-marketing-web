@@ -35,19 +35,19 @@ export default function CategoriesPage() {
   >(null);
   const [button_clicked, setButtonClicked] = useState(false);
 
-  // 🔎 Search + Pagination
+  //  Search + Pagination
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // ⏱️ Debounce search (1s after typing stops)
+  //  Debounce search (1s after typing stops)
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 1000);
     return () => clearTimeout(t);
   }, [search]);
 
-  // ✅ Fetch categories
+  //  Fetch categories
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -76,12 +76,12 @@ export default function CategoriesPage() {
     }
   };
 
-  // 🔁 Fetch when page or debouncedSearch changes
+  //  Fetch when page or debouncedSearch changes
   useEffect(() => {
     fetchCategories();
   }, [page, debouncedSearch]);
 
-  // ✅ React Hook Form
+  //  React Hook Form
   const {
     register,
     handleSubmit,
@@ -110,7 +110,7 @@ export default function CategoriesPage() {
     reset({});
   };
 
-  // ✅ Create / Update
+  //  Create / Update
   const onSubmit = async (data: CategoryFormData) => {
     setButtonClicked(true);
     if (modalType === "add") {
@@ -152,7 +152,7 @@ export default function CategoriesPage() {
     handleClose();
   };
 
-  // ✅ Delete
+  //  Delete
   const handleDelete = async () => {
     if (selected) {
       try {
@@ -298,7 +298,7 @@ export default function CategoriesPage() {
 
       {/*  Modal */}
       {modalType && (
-        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative  overflow-y-auto">
             <button
               onClick={handleClose}

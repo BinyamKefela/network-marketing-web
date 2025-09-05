@@ -172,7 +172,7 @@ export default function TrainingsPage() {
     }
   };
 
-  // 🔢 Pagination buttons (max 5, current centered)
+  // Pagination buttons (max 5, current centered)
   const getPageNumbers = () => {
     let start = Math.max(1, page - 2);
     let end = Math.min(totalPages, page + 2);
@@ -195,7 +195,7 @@ export default function TrainingsPage() {
         </button>
       </div>
 
-      {/* 🔎 Search */}
+      {/* Search */}
       <div className="mb-4 flex justify-between items-center gap-3">
         <input
           type="text"
@@ -267,7 +267,7 @@ export default function TrainingsPage() {
             )}
           </table>
 
-          {/* 🔢 Pagination controls */}
+          {/* Pagination controls */}
           <div className="flex justify-center items-center gap-2 mt-4">
             <button
               disabled={page === 1}
@@ -302,7 +302,7 @@ export default function TrainingsPage() {
 
       {/* ✅ Modal */}
       {modalType && (
-        <div className=" shadow-2xl rounded-xl fixed inset-0 bg-black/50  bg-opacity-500 flex items-center justify-center">
+        <div className=" shadow-2xl rounded-xl fixed inset-0 bg-black/50  bg-opacity-500 flex items-center justify-center z-50">
           <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative  overflow-y-auto items-center justify-center">
             <button
               onClick={handleClose}

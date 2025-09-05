@@ -336,7 +336,7 @@ export default function UnilevelConfigurationPage() {
 
       {/* ✅ Modal */}
       {modalType && (
-        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 bg-opacity-500 flex items-center justify-center">
+        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 bg-opacity-500 flex items-center justify-center z-50">
           <div className="bg-gray-50 p-6 rounded-lg w-1/2 max-h-screen overflow-y-auto relative">
             <button
               onClick={handleClose}

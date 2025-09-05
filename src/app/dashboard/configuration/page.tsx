@@ -16,9 +16,13 @@ const configurationSchema = z.object({
   housing_or_car_investment: z.coerce.number().min(0, "Required"),
   sacco: z.coerce.number().min(0, "Required"),
   company_revenue_product_percentage: z.coerce.number().min(0).max(100),
+  company_revenue_product: z.coerce.number().min(0, "Required"),
   product_disrtribution_reward_percentage: z.coerce.number().min(0, "Required"),
+  product_distribution_reward: z.coerce.number().min(0, "Required"),
   company_revenue_training_percentage: z.coerce.number().min(0, "Required"),
+  company_revenue_training: z.coerce.number().min(0, "Required"),
   training_distribution_reward_percentage: z.coerce.number().min(0, "Required"),
+  training_distribution_reward: z.coerce.number().min(0, "Required"),
   service_charge: z.coerce.number().min(0, "Required"),
 });
 
@@ -30,9 +34,13 @@ type Configuration = {
   housing_or_car_investment: number;
   sacco: number;
   company_revenue_product_percentage: number;
+  company_revenue_product: number;
   product_disrtribution_reward_percentage: number;
+  product_distribution_reward: number;
   company_revenue_training_percentage: number;
+  company_revenue_training: number;
   training_distribution_reward_percentage: number;
+  training_distribution_reward: number;
   service_charge: number;
   created_at: string;
   updated_at: string;
@@ -42,9 +50,7 @@ export default function ConfigurationPage() {
   const [configurations, setConfigurations] = useState<Configuration[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Configuration | null>(null);
-  const [modalType, setModalType] = useState<
-    "add" | "edit" | "view" | "delete" | null
-  >(null);
+  const [modalType, setModalType] = useState<"add" | "edit" | "view" | "delete" | null>(null);
   const [button_clicked, setButtonClicked] = useState(false);
 
   // Search + Pagination
@@ -168,6 +174,9 @@ export default function ConfigurationPage() {
     if (selected) {
       await fetch(`${BASE_URL}/delete_configuration/${selected.id}/`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
       });
       await fetchConfigurations();
       handleClose();
@@ -227,6 +236,8 @@ export default function ConfigurationPage() {
                 <th className="p-2 text-xs px-7">Investment</th>
                 <th className="p-2 text-xs px-7">Housing/Car</th>
                 <th className="p-2 text-xs px-7">Sacco</th>
+                <th className="p-2 text-xs px-7">Product %</th>
+                <th className="p-2 text-xs px-7">Training %</th>
                 <th className="p-2 text-xs px-7">Service Charge</th>
                 <th className="p-2 text-xs px-7">Actions</th>
               </tr>
@@ -235,7 +246,7 @@ export default function ConfigurationPage() {
             {configurations.length == 0 ? (
               <tbody>
                 <tr>
-                  <td colSpan={5} className="text-center text-xs py-3 px-7">
+                  <td colSpan={7} className="text-center text-xs py-3 px-7">
                     No items...
                   </td>
                 </tr>
@@ -252,6 +263,12 @@ export default function ConfigurationPage() {
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {c.sacco}
+                    </td>
+                    <td className="px-7 py-3 text-xs text-gray-500">
+                      {c.company_revenue_product_percentage}%
+                    </td>
+                    <td className="px-7 py-3 text-xs text-gray-500">
+                      {c.company_revenue_training_percentage}%
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {c.service_charge}
@@ -326,23 +343,34 @@ export default function ConfigurationPage() {
 
       {/* Modal */}
       {modalType && (
-        <div className="shadow-2x overflow-y-auto rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative overflow-y-auto">
+        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 bg-opacity-500 flex items-center justify-center z-50">
+          <div className="bg-gray-50 p-6 rounded-lg w-3/4 max-h-screen overflow-y-auto relative">
             <button
               onClick={handleClose}
               className="absolute font-bold top-5 cursor-pointer hover:text-black text-xl right-2 text-gray-600"
             >
-              x
+              ×
             </button>
 
             {modalType === "view" && selected && (
-              <div className="flex flex-col gap-y-2">
-                <h2 className="text-lg font-bold mb-4">Configuration details</h2>
-                {Object.entries(selected).map(([key, value]) => (
-                  <p key={key} className="text-sm">
-                    <strong>{key}:</strong> {String(value)}
-                  </p>
-                ))}
+              <div className="grid grid-cols-2 gap-4">
+                <h2 className="text-lg font-bold mb-4 col-span-2">Configuration Details</h2>
+                {Object.entries(selected)
+                  .filter(([key]) => !['id', 'created_at', 'updated_at'].includes(key))
+                  .map(([key, value]) => (
+                    <div key={key} className="flex flex-col">
+                      <span className="text-xs font-semibold capitalize">
+                        {key.replace(/_/g, ' ')}:
+                      </span>
+                      <span className="text-sm">
+                        {typeof value === 'number' 
+                          ? key.includes('percentage') 
+                            ? `${value}%` 
+                            : value 
+                          : value}
+                      </span>
+                    </div>
+                  ))}
               </div>
             )}
 
@@ -351,153 +379,204 @@ export default function ConfigurationPage() {
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4 w-full p-2"
               >
-                <h2 className="text-md font-bold">
-                  {modalType === "add"
-                    ? "Add Configuration"
-                    : "Edit Configuration"}
+                <h2 className="text-xl font-bold mb-4">
+                  {modalType === "add" ? "Add Configuration" : "Edit Configuration"}
                 </h2>
 
-                {/* Explicit fields */}
-                <div className="flex gap-7">
-                <div className="w-full">
-                  <label className="text-xs">Investment Amount</label>
-                  <input
-                  placeholder="investment amount"
-                    type="number"
-                    step="0.01"
-                    {...register("investment_amount")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.investment_amount && (
-                    <p className="text-red-500 text-xs">
-                      {errors.investment_amount.message}
-                    </p>
-                  )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs">Investment Amount</label>
+                    <input
+                      placeholder="Investment amount"
+                      type="number"
+                      step="0.01"
+                      {...register("investment_amount")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.investment_amount && (
+                      <p className="text-red-500 text-xs">
+                        {errors.investment_amount.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Housing or Car Investment</label>
+                    <input
+                      placeholder="Housing or car investment"
+                      type="number"
+                      step="0.01"
+                      {...register("housing_or_car_investment")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.housing_or_car_investment && (
+                      <p className="text-red-500 text-xs">
+                        {errors.housing_or_car_investment.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Sacco</label>
+                    <input
+                      placeholder="SACCO"
+                      type="number"
+                      step="0.01"
+                      {...register("sacco")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.sacco && (
+                      <p className="text-red-500 text-xs">
+                        {errors.sacco.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Company Revenue Product %</label>
+                    <input
+                      placeholder="Company revenue product %"
+                      type="number"
+                      step="0.01"
+                      {...register("company_revenue_product_percentage")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.company_revenue_product_percentage && (
+                      <p className="text-red-500 text-xs">
+                        {errors.company_revenue_product_percentage.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Company Revenue Product</label>
+                    <input
+                      placeholder="Company revenue product"
+                      type="number"
+                      step="0.01"
+                      {...register("company_revenue_product")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.company_revenue_product && (
+                      <p className="text-red-500 text-xs">
+                        {errors.company_revenue_product.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Product Distribution Reward %</label>
+                    <input
+                      placeholder="Product distribution reward %"
+                      type="number"
+                      step="0.01"
+                      {...register("product_disrtribution_reward_percentage")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.product_disrtribution_reward_percentage && (
+                      <p className="text-red-500 text-xs">
+                        {errors.product_disrtribution_reward_percentage.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Product Distribution Reward</label>
+                    <input
+                      placeholder="Product distribution reward"
+                      type="number"
+                      step="0.01"
+                      {...register("product_distribution_reward")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.product_distribution_reward && (
+                      <p className="text-red-500 text-xs">
+                        {errors.product_distribution_reward.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Company Revenue Training %</label>
+                    <input
+                      placeholder="Company revenue training %"
+                      type="number"
+                      step="0.01"
+                      {...register("company_revenue_training_percentage")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.company_revenue_training_percentage && (
+                      <p className="text-red-500 text-xs">
+                        {errors.company_revenue_training_percentage.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Company Revenue Training</label>
+                    <input
+                      placeholder="Company revenue training"
+                      type="number"
+                      step="0.01"
+                      {...register("company_revenue_training")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.company_revenue_training && (
+                      <p className="text-red-500 text-xs">
+                        {errors.company_revenue_training.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Training Distribution Reward %</label>
+                    <input
+                      placeholder="Training distribution reward %"
+                      type="number"
+                      step="0.01"
+                      {...register("training_distribution_reward_percentage")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.training_distribution_reward_percentage && (
+                      <p className="text-red-500 text-xs">
+                        {errors.training_distribution_reward_percentage.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Training Distribution Reward</label>
+                    <input
+                      placeholder="Training distribution reward"
+                      type="number"
+                      step="0.01"
+                      {...register("training_distribution_reward")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.training_distribution_reward && (
+                      <p className="text-red-500 text-xs">
+                        {errors.training_distribution_reward.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-xs">Service Charge</label>
+                    <input
+                      placeholder="Service charge"
+                      type="number"
+                      step="0.01"
+                      {...register("service_charge")}
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                    />
+                    {errors.service_charge && (
+                      <p className="text-red-500 text-xs">
+                        {errors.service_charge.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="w-full">
-                  <label className="text-xs">Housing or Car Investment</label>
-                  <input
-                  placeholder="housing or car investment"
-                    type="number"
-                    step="0.01"
-                    {...register("housing_or_car_investment")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.housing_or_car_investment && (
-                    <p className="text-red-500 text-xs">
-                      {errors.housing_or_car_investment.message}
-                    </p>
-                  )}
-                </div>
-                </div>
-                <div className="flex gap-7">               
-                <div className="w-full">
-                  <label className="text-xs">Sacco</label>
-                  <input
-                  placeholder="SACCO"
-                    type="number"
-                    step="0.01"
-                    {...register("sacco")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.sacco && (
-                    <p className="text-red-500 text-xs">
-                      {errors.sacco.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="w-full">
-                  <label className="text-xs">Company Revenue Product %</label>
-                  <input
-                  placeholder="company revenue product %"
-                    type="number"
-                    step="0.01"
-                    {...register("company_revenue_product_percentage")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.company_revenue_product_percentage && (
-                    <p className="text-red-500 text-xs">
-                      {errors.company_revenue_product_percentage.message}
-                    </p>
-                  )}
-                </div>
-                </div>
-
-                <div className="flex gap-7">
-
-                <div className="w-full">
-                  <label className="text-xs">Product Distribution Reward %</label>
-                  <input
-                  placeholder="product distribution reward %"
-                    type="number"
-                    step="0.01"
-                    {...register("product_disrtribution_reward_percentage")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.product_disrtribution_reward_percentage && (
-                    <p className="text-red-500 text-xs">
-                      {errors.product_disrtribution_reward_percentage.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="w-full">
-                  <label className="text-xs">Company Revenue Training %</label>
-                  <input
-                  placeholder="comany revenue traning %"
-                    type="number"
-                    step="0.01"
-                    {...register("company_revenue_training_percentage")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.company_revenue_training_percentage && (
-                    <p className="text-red-500 text-xs">
-                      {errors.company_revenue_training_percentage.message}
-                    </p>
-                  )}
-                </div>
-                </div>
-
-                <div className="flex gap-7">
-                <div className="w-full">
-                  <label className="text-xs">
-                    Training Distribution Reward %
-                  </label>
-                  <input
-                  placeholder="training distribution reward %"
-                    type="number"
-                    step="0.01"
-                    {...register("training_distribution_reward_percentage")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.training_distribution_reward_percentage && (
-                    <p className="text-red-500 text-xs">
-                      {
-                        errors.training_distribution_reward_percentage.message
-                      }
-                    </p>
-                  )}
-                </div>
-
-                <div className="w-full">
-                  <label className="text-xs">Service Charge</label>
-                  <input
-                  placeholder="service charge"
-                    type="number"
-                    step="0.01"
-                    {...register("service_charge")}
-                    className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                  />
-                  {errors.service_charge && (
-                    <p className="text-red-500 text-xs">
-                      {errors.service_charge.message}
-                    </p>
-                  )}
-                </div>
-                </div>
-                <div className="flex gap-7"></div>
                 <button
                   type="submit"
                   className="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-900 cursor-pointer"

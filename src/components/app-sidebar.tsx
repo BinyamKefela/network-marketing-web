@@ -145,10 +145,16 @@ const data = {
       url:"/dashboard/users",
       icon:PersonStanding
     },
-    {name:"configuration",
-      url:"/dashboard/configuration",
-      icon:Settings2
+    {
+      name: "category",
+      url: "/dashboard/category",
+      icon: Frame,
     },
+    {name:"products",
+      url:"/dashboard/products",
+      icon:BoxIcon
+    },
+    
     {name:"training",
       url:"/dashboard/training",
       icon:PenBoxIcon
@@ -158,14 +164,9 @@ const data = {
       url: "/dashboard/package",
       icon: Package2Icon,
     },
-    {
-      name: "category",
-      url: "/dashboard/category",
-      icon: Frame,
-    },
-    {name:"products",
-      url:"/dashboard/products",
-      icon:BoxIcon
+    {name:"configuration",
+      url:"/dashboard/configuration",
+      icon:Settings2
     },
     {
       name:"commissions configuration",
