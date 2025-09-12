@@ -179,23 +179,33 @@ const data = {
       icon: GalleryVerticalEnd,
     },
     {
-      name: "Sales",
-      url: "#",
+      name: "tree setting",
+      url: "/dashboard/tree_setting",
+      icon: PieChart,
+    },
+    {
+      name: "MLM settings",
+      url: "/dashboard/mlm_settings",
+      icon: AntennaIcon,
+    },
+    {
+      name: "sales",
+      url: "/dashboard/sales",
       icon: PieChart,
     },
     {name:"transactions",
-      url:"#",
+      url:"/dashboard/transaction",
       icon:CreditCardIcon
     },
     {
       name: "commisions",
-      url: "#",
+      url: "/dashboard/commissions",
       icon: Map,
     },
     
     {
       name: "housing",
-      url: "#",
+      url: "/dashboard/housing",
       icon: AntennaIcon,
     },
     {name:"logout",

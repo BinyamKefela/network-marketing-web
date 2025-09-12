@@ -451,8 +451,8 @@ export default function PackagesPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="w-full justify-center items-center">
-          <table className="min-w-full border border-gray-300 rounded shadow-xs">
+        <div className="w-full justify-center flex flex-col items-center">
+          <table className="min-w-full border px-50 border-gray-300 rounded shadow-xs">
             <thead>
               <tr className="bg-gray-100">
                 <th className="p-2 text-xs px-7">Name</th>

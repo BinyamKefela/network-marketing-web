@@ -333,8 +333,7 @@ export default function ConfigurationPage() {
             <button
               disabled={page === totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              className="px-3 py-1 border rounded disabled:opacity-50 text-xs cursor-pointer"
-            >
+              className="px-3 py-1 border rounded disabled:opacity-50 text-xs cursor-pointer">
               Next
             </button>
           </div>

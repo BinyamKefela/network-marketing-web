@@ -19,10 +19,11 @@ const userSchema = z.object({
   phone_number: z.string().optional(),
   address: z.string().optional(),
   wallet_balance: z.coerce.number().min(0, "Wallet balance must be >= 0").optional(),
-  level: z.coerce.number().min(0, "Level must be >= 0"),
-  is_active: z.boolean(),
+  //level: z.coerce.number().optional(),
+  //is_active: z.boolean(),
   is_staff: z.boolean(),
   is_superuser: z.boolean(),
+  password: z.string().min(6, "Password must be at least 6 characters"), // Password field
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -36,8 +37,9 @@ type User = {
   phone_number?: string;
   address?: string;
   wallet_balance: number;
-  level: number;
-  is_active: boolean;
+  password: string; // Include password field
+  level?: number;
+  //is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
   date_joined: string;
@@ -115,10 +117,11 @@ export default function UsersPage() {
         phone_number: user.phone_number || "",
         address: user.address || "",
         wallet_balance: user.wallet_balance,
-        level: user.level,
-        is_active: user.is_active,
+        
+        //is_active: user.is_active,
         is_staff: user.is_staff,
         is_superuser: user.is_superuser,
+        password: "", // Reset password field
       });
     } else {
       reset({});
@@ -136,7 +139,7 @@ export default function UsersPage() {
     setButtonClicked(true);
     if (modalType === "add") {
       try {
-        const res = await fetch(BASE_URL + "/post_user", {
+        const res = await fetch(BASE_URL + "/sign_up", {
           method: "POST",
           headers: { 
             "Content-Type": "application/json", 
@@ -208,7 +211,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-w-full w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-lg font-bold">Users</h1>
         <button 
@@ -239,21 +242,22 @@ export default function UsersPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="w-full justify-center items-center">
+        <div className="w-full min-w-full justify-center items-center">
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
-            <thead>
+            <thead className="min-w-full">
               <tr className="bg-gray-100">
                 <th className="p-2 text-xs px-7">Email</th>
                 <th className="p-2 text-xs px-7">Name</th>
                 <th className="p-2 text-xs px-7">Phone</th>
                 <th className="p-2 text-xs px-7">Wallet</th>
                 <th className="p-2 text-xs px-7">Level</th>
+                <th className="p-2 text-xs px-7" >referal code</th>
                 <th className="p-2 text-xs px-7">Actions</th>
               </tr>
             </thead>
 
             {users.length === 0 ? (
-              <tbody>
+              <tbody className="min-w-full">
                 <tr>
                   <td colSpan={6} className="text-center text-xs py-3 px-7">
                     No items...
@@ -271,6 +275,7 @@ export default function UsersPage() {
                     <td className="px-7 py-3 text-xs text-gray-500">{u.phone_number}</td>
                     <td className="px-7 py-3 text-xs text-gray-500">{u.wallet_balance}</td>
                     <td className="px-7 py-3 text-xs text-gray-500">{u.level}</td>
+                    <td className="px-7 py-3 text-xs text-gray-500">{u.referal_code}</td>
                     <td className="px-7 py-3 flex justify-center gap-2">
                       <button
                         className="text-xs rounded"
@@ -354,6 +359,7 @@ export default function UsersPage() {
                 <p className="text-sm"><strong>Staff:</strong> {selected.is_staff ? "Yes" : "No"}</p>
                 <p className="text-sm"><strong>Superuser:</strong> {selected.is_superuser ? "Yes" : "No"}</p>
                 <p className="text-sm"><strong>Joined:</strong> {new Date(selected.date_joined).toLocaleDateString()}</p>
+                <p className="text-sm"><strong>recruited by:</strong> {selected.recruited_by}</p>
               </div>
             )}
 
@@ -435,26 +441,19 @@ export default function UsersPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs">Level</label>
-                    <input
-                      type="number"
-                      {...register("level")}
-                      placeholder="Level"
-                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    />
-                    {errors.level && (
-                      <p className="text-red-500 text-xs">{errors.level.message}</p>
+                <div className="flex items-center gap-2">
+                    <label className="text-xs">password</label>
+                    <input  
+                    placeholder="Password"
+                      className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600" {...register("password")} />
+                    
+                    {errors.password && (
+                      <p className="text-red-500 text-xs">{errors.password.message}</p>
                     )}
                   </div>
-                </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" className="cursor-pointer" {...register("is_active")} />
-                    <label className="text-xs">Active?</label>
-                  </div>
+                  
                   <div className="flex items-center gap-2">
                     <input type="checkbox" className="cursor-pointer" {...register("is_staff")} />
                     <label className="text-xs">Staff?</label>
