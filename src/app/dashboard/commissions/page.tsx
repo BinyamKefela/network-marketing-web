@@ -250,7 +250,7 @@ export default function CommissionsPage() {
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead>
               <tr className="bg-gray-100">
-                <th className="p-2 text-xs px-7">Sale (Product - Buyer)</th>
+                <th className="p-2 text-xs px-7">Sale (Product - Seller)</th>
                 <th className="p-2 text-xs px-7">Amount</th>
                 <th className="p-2 text-xs px-7">Created At</th>
                 <th className="p-2 text-xs px-7">Updated At</th>
@@ -271,7 +271,7 @@ export default function CommissionsPage() {
                 {commissions?.map((c) => (
                   <tr key={c.id} className="text-center">
                     <td className="px-7 py-3 text-xs text-gray-500">
-                      {c.sale?.product?.name} - {c.sale?.buyer?.username}
+                      {c.sale?.product?.name} {c.sale?.package?.name} - {c.sale?.seller?.email}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {c.amount}
@@ -365,7 +365,7 @@ export default function CommissionsPage() {
               <div className="flex flex-col justify-center gap-y-4">
                 <h2 className="text-lg font-bold mb-4">Commission Details</h2>
                 <p className="text-sm"><strong>ID:</strong> {selected.id}</p>
-                <p className="text-sm"><strong>Sale:</strong> {selected.sale?.product?.name} - {selected.sale?.buyer?.username}</p>
+                <p className="text-sm"><strong>Sale:</strong> {selected.sale.product?.name} {selected.sale.package?.name} - {selected.sale.seller?.email}</p>
                 <p className="text-sm"><strong>Amount:</strong> {selected.amount}</p>
                 <p className="text-sm"><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
                 <p className="text-sm"><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
@@ -391,7 +391,7 @@ export default function CommissionsPage() {
                       <option value={0}>Select Sale</option>
                       {sales.map((sale) => (
                         <option key={sale.id} value={sale.id}>
-                          {sale.product?.name} - {sale.buyer?.username}
+                          {sale.product?.name} {sale.package?.name} - {sale.seller?.email}
                         </option>
                       ))}
                     </select>

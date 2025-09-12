@@ -305,7 +305,7 @@ export default function WalletTransactionsPage() {
                 {transactions?.map((t) => (
                   <tr key={t.id} className="text-center">
                     <td className="px-7 py-3 text-xs text-gray-500">
-                      {t.user?.username}
+                      {t.user?.email}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {t.amount}
@@ -321,7 +321,7 @@ export default function WalletTransactionsPage() {
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {t.reference 
-                        ? `Commission #${t.reference.id} (${t.reference.sale?.product?.name})` 
+                        ? `Commission #${t.reference.id}` 
                         : 'N/A'}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
@@ -413,11 +413,11 @@ export default function WalletTransactionsPage() {
               <div className="flex flex-col justify-center gap-y-4">
                 <h2 className="text-lg font-bold mb-4">Wallet Transaction Details</h2>
                 <p className="text-sm"><strong>ID:</strong> {selected.id}</p>
-                <p className="text-sm"><strong>User:</strong> {selected.user?.username}</p>
+                <p className="text-sm"><strong>User:</strong> {selected.user?.email}</p>
                 <p className="text-sm"><strong>Amount:</strong> {selected.amount}</p>
                 <p className="text-sm"><strong>Type:</strong> {selected.type}</p>
-                <p className="text-sm"><strong>Reference:</strong> {selected.reference 
-                  ? `Commission #${selected.reference.id} (${selected.reference.sale?.product?.name})` 
+                <p className="text-sm"><strong>Reference:</strong> {selected.reference.id 
+                  ? `Commission #${selected.reference.id}` 
                   : 'N/A'}</p>
                 <p className="text-sm"><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
                 <p className="text-sm"><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>

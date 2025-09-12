@@ -354,10 +354,10 @@ export default function SalesPage() {
                       {s.package?.name || "N/A"}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
-                      {s.seller?.username}
+                      {s.seller?.email || "N/A"}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
-                      {s.buyer?.username}
+                      {s.buyer?.email || "N/A"}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {s.quantity}
