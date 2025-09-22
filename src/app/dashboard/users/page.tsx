@@ -245,7 +245,7 @@ export default function UsersPage() {
         <div className="w-full min-w-full justify-center items-center">
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead className="min-w-full">
-              <tr className="bg-gray-100">
+              <tr className="bg-gray-100 dark:bg-gray-900">
                 <th className="p-2 text-xs px-7">Email</th>
                 <th className="p-2 text-xs px-7">Name</th>
                 <th className="p-2 text-xs px-7">Phone</th>
@@ -338,7 +338,7 @@ export default function UsersPage() {
       {/* ✅ Modal */}
       {modalType && (
         <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 bg-opacity-500 flex items-center justify-center z-50">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative overflow-y-auto items-center justify-center">
+          <div className="bg-gray-50 text-xs dark:bg-gray-700 p-6 rounded-lg w-1/2 relative overflow-y-auto items-center justify-center">
             <button
               onClick={handleClose}
               className="absolute font-bold top-5 cursor-pointer hover:text-black text-xl right-2 text-gray-600"
@@ -347,6 +347,14 @@ export default function UsersPage() {
             </button>
 
             {modalType === "view" && selected && (
+              <div className="flex flex-col gap-4">
+              <div className="flex flex-row gap-8 text-xs">
+                <button className="border-t-0 border-r-0 border-l-0 border-b-gray-800 border-b-2 p-2">user details</button>
+                <button className="border-t-0 border-r-0 border-l-0 border-b-gray-800 border-b-2 p-2">user commisions</button>
+                <button className="border-t-0 border-r-0 border-l-0 border-b-gray-800 border-b-2 p-2">user investment</button>
+              
+              </div>
+              <hr/>
               <div className="flex flex-col justify-center gap-y-4">
                 <h2 className="text-lg font-bold mb-4">User details</h2>
                 <p className="text-sm"><strong>Email:</strong> {selected.email}</p>
@@ -360,6 +368,7 @@ export default function UsersPage() {
                 <p className="text-sm"><strong>Superuser:</strong> {selected.is_superuser ? "Yes" : "No"}</p>
                 <p className="text-sm"><strong>Joined:</strong> {new Date(selected.date_joined).toLocaleDateString()}</p>
                 <p className="text-sm"><strong>recruited by:</strong> {selected.recruited_by}</p>
+              </div>
               </div>
             )}
 

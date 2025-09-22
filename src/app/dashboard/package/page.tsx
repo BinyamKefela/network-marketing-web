@@ -454,7 +454,7 @@ export default function PackagesPage() {
         <div className="w-full justify-center flex flex-col items-center">
           <table className="min-w-full border px-50 border-gray-300 rounded shadow-xs">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-gray-100 dark:bg-gray-900">
                 <th className="p-2 text-xs px-7">Name</th>
                 <th className="p-2 text-xs px-7">Type</th>
                 <th className="p-2 text-xs px-7">Price</th>

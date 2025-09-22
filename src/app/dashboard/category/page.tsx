@@ -40,6 +40,7 @@ export default function CategoriesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pageSize,setPageSize] = useState(5);
 
   //  Debounce search (1s after typing stops)
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const url = `${BASE_URL}/get_categories?page=${page}&search=${encodeURIComponent(
+      const url = `${BASE_URL}/get_categories?page=${page}&page_size=${pageSize}&ordering=-id&search=${encodeURIComponent(
         debouncedSearch
       )}`;
       const res = await fetch(url, {
@@ -79,7 +80,7 @@ export default function CategoriesPage() {
   //  Fetch when page or debouncedSearch changes
   useEffect(() => {
     fetchCategories();
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, pageSize]);
 
   //  React Hook Form
   const {
@@ -186,6 +187,11 @@ export default function CategoriesPage() {
     );
   };
 
+  const handlePageSizeChange = async (size:number)=>{
+     setPageSize(size);
+    
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -200,6 +206,7 @@ export default function CategoriesPage() {
 
       {/*  Search */}
       <div className="mb-4 flex justify-between items-center gap-3">
+        <div>
         <input
           type="text"
           placeholder="Search categories..."
@@ -208,8 +215,19 @@ export default function CategoriesPage() {
             setPage(1);
             setSearch(e.target.value);
           }}
-          className="border text-xs px-3 py-2 rounded-lg w-1/3"
+          className="border text-xs px-3 py-2 rounded-lg"
         />
+        <select className="ml-4 border text-xs px-3 py-2 rounded-lg" value={pageSize} onChange={(e)=>{
+          handlePageSizeChange(Number(e.target.value));
+        }}>
+          <option className="dark:bg-gray-700" value={5}>5</option>
+          <option className="dark:bg-gray-700" value={10}>10</option>
+          <option className="dark:bg-gray-700" value={20}>20</option>
+          <option className="dark:bg-gray-700" value={50}>50</option>
+          <option className="dark:bg-gray-700" value={99999}>all</option>
+        </select>
+        
+        </div>
         <div className="text-sm text-gray-600">
           Page {page} of {totalPages}
         </div>
@@ -221,7 +239,8 @@ export default function CategoriesPage() {
         <div className="w-full justify-center items-center">
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-gray-100  dark:bg-gray-900">
+                <th className="p-2 text-xs px-7">#</th>
                 <th className="p-2 text-xs px-7">name</th>
                 <th className="p-2 text-xs px-7">description</th>
                 <th className="p-2 text-xs px-7">created At</th>
@@ -239,8 +258,9 @@ export default function CategoriesPage() {
               </tbody>
             ) : (
               <tbody>
-                {categories.map((c) => (
+                {categories.map((c,index) => (
                   <tr key={c.id} className="text-center">
+                    <td className="px-7 py-3 text-xs text-gray-500">{index+1}</td>
                     <td className="px-7 py-3 text-xs text-gray-500">{c.name}</td>
                     <td className="px-7 py-3 text-xs text-gray-500">{c.description || "-"}</td>
                     <td className="px-7 py-3 text-xs text-gray-500">
@@ -298,8 +318,8 @@ export default function CategoriesPage() {
 
       {/*  Modal */}
       {modalType && (
-        <div className="shadow-2xl rounded-xl fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-50 p-6 rounded-lg w-1/2 relative  overflow-y-auto">
+        <div className="shadow-2xl rounded-xl fixed inset-0  bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-50 dark:bg-gray-800  p-6 rounded-lg w-1/2 relative  overflow-y-auto">
             <button
               onClick={handleClose}
               className="absolute font-bold top-5 hover:text-black text-xl cursor-pointer right-2 text-gray-600"

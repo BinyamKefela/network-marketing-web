@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/ui/theme-toggle";
-import { LogOutIcon } from "lucide-react";
+import { Link, LogOutIcon } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { logoutUser } from "../auth/login/api";
 
@@ -30,13 +30,24 @@ export default function Layout({
       disableTransitionOnChange>
       <SidebarProvider>
         <AppSidebar />
-        <main>
-          <SidebarTrigger />
-          <ModeToggle />
-          <div onClick={handleLogout}>
-            <LogOutIcon />
+        <main className="flex w-full flex-col ">
+          <div className="h-16 flex items-stretch gap-10">
+            <div className="flex items-center gap-3 px-4">
+            <SidebarTrigger className="cursor-pointer" />
+            <ModeToggle/>
+            <div className="items-center py-4 justify-end cursor-pointer" onClick={handleLogout}>
+            <LogOutIcon/>
           </div>
-          <div className="flex flex-col items-center justify-center">
+            <h3 className=" cursor-pointer font-medium hover:text-blue-500">Fast Network Marketing</h3>
+            </div>
+          
+
+          </div>
+          <div className=" bg-gray-500">
+            <hr />
+          </div>
+          
+          <div className="flex flex-col w-full ">
             {children}
           </div>
         </main>
