@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   Antenna,
   AntennaIcon,
-  AudioWaveform,
   BookOpen,
   Bot,
   BoxIcon,
@@ -23,8 +22,7 @@ import {
   SquareTerminal,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
+
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
@@ -35,7 +33,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { NavNetworking } from "./nav-networking"
-import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 
 // This is sample data.
