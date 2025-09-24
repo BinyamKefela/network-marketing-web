@@ -82,7 +82,7 @@ export default function TreeSettingsPage() {
     reset,
     formState: { errors },
   } = useForm<TreeSettingFormData>({
-    resolver: zodResolver(treeSettingSchema),
+    resolver: zodResolver(treeSettingSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, setting?: TreeSetting) => {

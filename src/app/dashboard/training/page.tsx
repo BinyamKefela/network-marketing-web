@@ -89,7 +89,7 @@ export default function TrainingsPage() {
     reset,
     formState: { errors },
   } = useForm<TrainingFormData>({
-    resolver: zodResolver(trainingSchema),
+    resolver: zodResolver(trainingSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, training?: Training) => {

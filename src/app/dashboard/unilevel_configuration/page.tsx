@@ -117,7 +117,7 @@ export default function UnilevelConfigurationPage() {
     reset,
     formState: { errors },
   } = useForm<UnilevelFormData>({
-    resolver: zodResolver(unilevelSchema),
+    resolver: zodResolver(unilevelSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, config?: UnilevelConfiguration) => {

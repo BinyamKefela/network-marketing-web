@@ -86,7 +86,7 @@ export default function MlmSettingsPage() {
     reset,
     formState: { errors },
   } = useForm<MlmSettingFormData>({
-    resolver: zodResolver(mlmSettingSchema),
+    resolver: zodResolver(mlmSettingSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, setting?: MlmSetting) => {

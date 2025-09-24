@@ -104,7 +104,7 @@ export default function ConfigurationPage() {
     reset,
     formState: { errors },
   } = useForm<ConfigurationFormData>({
-    resolver: zodResolver(configurationSchema),
+    resolver: zodResolver(configurationSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, config?: Configuration) => {

@@ -156,7 +156,7 @@ export default function SalesPage() {
     watch,
     formState: { errors },
   } = useForm<SaleFormData>({
-    resolver: zodResolver(saleSchema),
+    resolver: zodResolver(saleSchema) as any,
   });
 
   // Calculate sub_total when quantity or price changes

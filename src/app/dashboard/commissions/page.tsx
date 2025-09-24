@@ -110,7 +110,7 @@ export default function CommissionsPage() {
     reset,
     formState: { errors },
   } = useForm<CommissionFormData>({
-    resolver: zodResolver(commissionSchema),
+    resolver: zodResolver(commissionSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, commission?: Commission) => {

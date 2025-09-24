@@ -131,7 +131,7 @@ export default function WalletTransactionsPage() {
     reset,
     formState: { errors },
   } = useForm<WalletTransactionFormData>({
-    resolver: zodResolver(walletTransactionSchema),
+    resolver: zodResolver(walletTransactionSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, transaction?: WalletTransaction) => {

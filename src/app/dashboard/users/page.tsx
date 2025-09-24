@@ -102,7 +102,7 @@ export default function UsersPage() {
     reset, 
     formState: { errors } 
   } = useForm<UserFormData>({
-    resolver: zodResolver(userSchema),
+    resolver: zodResolver(userSchema) as any,
   });
 
   const handleOpen = (type: typeof modalType, user?: User) => {
