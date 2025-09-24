@@ -21,7 +21,7 @@ export default function GenericDataTable<T extends Record<string, any>>({
   const [pending, setPending] = useState(true);
 
   // column management
-  const [allColumns, setAllColumns] = useState<TableColumn<T>[]>(initialColumns);
+  //const [allColumns, setAllColumns] = useState<TableColumn<T>[]>(initialColumns);
   const [visibleColumns, setVisibleColumns] = useState<TableColumn<T>[]>(initialColumns);
 
   // fetch data

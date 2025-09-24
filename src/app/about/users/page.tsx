@@ -2,7 +2,7 @@
 
 export default function userProfile(){
 
-    let id:string = 'hi';
+    const id:string = 'hi';
 
     return (
         <div>

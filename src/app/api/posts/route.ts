@@ -8,10 +8,6 @@ let posts = [{id:1,title:'First Post',content:"this is my first post"},
 
 const generated = () => Math.max(...posts.map(post=>post.id),0)+1;
 
-export async function GetIsDirty() {
-    return NextResponse.json(posts)
-}
-
 
 export async function POST(request:Request){
     const body = await request.json();

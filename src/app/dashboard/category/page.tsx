@@ -116,7 +116,7 @@ export default function CategoriesPage() {
     setButtonClicked(true);
     if (modalType === "add") {
       try {
-        let result = await fetch(BASE_URL + "/post_category", {
+        const result = await fetch(BASE_URL + "/post_category", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -133,7 +133,7 @@ export default function CategoriesPage() {
       }
     } else if (modalType === "edit" && selected) {
       try {
-        let result = await fetch(`${BASE_URL}/update_category/${selected.id}`, {
+        const result = await fetch(`${BASE_URL}/update_category/${selected.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -157,7 +157,7 @@ export default function CategoriesPage() {
   const handleDelete = async () => {
     if (selected) {
       try {
-        let result = await fetch(`${BASE_URL}/delete_category/${selected.id}`, {
+        const result = await fetch(`${BASE_URL}/delete_category/${selected.id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${getAuthToken()}`,
