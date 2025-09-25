@@ -13,7 +13,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 // ✅ Schema
 const mlmSettingSchema = z.object({
   max_level: z.coerce.number().min(1, "Must be at least 1"),
-  min_withdrawal_amount: z.coerce.number().min(0.01, "Must be at least 0.01"),
+  business_volume_amount_in_words: z.coerce.number().min(0.01, "Must be at least 0.01"),
   payout_frequency: z.coerce.number().min(1, "Must be at least 1").optional().nullable(),
 });
 
@@ -22,7 +22,7 @@ type MlmSettingFormData = z.infer<typeof mlmSettingSchema>;
 type MlmSetting = {
   id: number;
   max_level: number;
-  min_withdrawal_amount: number;
+  business_volume_amount_in_sales: number;
   payout_frequency: number | null;
   created_at: string;
   updated_at: string;
@@ -95,7 +95,7 @@ export default function MlmSettingsPage() {
     if (setting) {
       reset({
         max_level: setting.max_level,
-        min_withdrawal_amount: setting.min_withdrawal_amount,
+        business_volume_amount_in_sales: setting.business_volume_amount_in_sales,
         payout_frequency: setting.payout_frequency || undefined,
       });
     } else {
@@ -236,7 +236,7 @@ export default function MlmSettingsPage() {
             <thead>
               <tr className="bg-gray-100">
                 <th className="p-2 text-xs px-7">Max Level</th>
-                <th className="p-2 text-xs px-7">Min Withdrawal Amount</th>
+                <th className="p-2 text-xs px-7">business volume amount in sales</th>
                 <th className="p-2 text-xs px-7">Payout Frequency (Days)</th>
                 <th className="p-2 text-xs px-7">Created At</th>
                 <th className="p-2 text-xs px-7">Updated At</th>
@@ -260,7 +260,7 @@ export default function MlmSettingsPage() {
                       {s.max_level}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
-                      {s.min_withdrawal_amount}
+                      {s.business_volume_amount_in_sales}
                     </td>
                     <td className="px-7 py-3 text-xs text-gray-500">
                       {s.payout_frequency || "N/A"}
@@ -355,7 +355,7 @@ export default function MlmSettingsPage() {
                 <h2 className="text-lg font-bold mb-4">MLM Setting Details</h2>
                 <p className="text-sm"><strong>ID:</strong> {selected.id}</p>
                 <p className="text-sm"><strong>Max Level:</strong> {selected.max_level}</p>
-                <p className="text-sm"><strong>Min Withdrawal Amount:</strong> {selected.min_withdrawal_amount}</p>
+                <p className="text-sm"><strong>business_volume amount in sales:</strong> {selected.business_volume_amount_in_sales}</p>
                 <p className="text-sm"><strong>Payout Frequency:</strong> {selected.payout_frequency || "N/A"} days</p>
                 <p className="text-sm"><strong>Created At:</strong> {new Date(selected.created_at).toLocaleString()}</p>
                 <p className="text-sm"><strong>Updated At:</strong> {new Date(selected.updated_at).toLocaleString()}</p>
@@ -404,8 +404,8 @@ export default function MlmSettingsPage() {
                       {...register("payout_frequency")}
                       className="w-full border p-2 text-xs rounded-lg focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
                     />
-                    {errors.payout_frequency && (
-                      <p className="text-red-500 text-xs">{errors.payout_frequency.message}</p>
+                    {errors.business_volume_amount_in_words && (
+                      <p className="text-red-500 text-xs">{errors.business_volume_amount_in_words.message}</p>
                     )}
                   </div>
                 </div>
@@ -429,7 +429,7 @@ export default function MlmSettingsPage() {
                 <p className="text-sm">
                   Are you sure you want to delete the MLM setting with{" "}
                   <strong>{selected.max_level}</strong> max levels and{" "}
-                  <strong>{selected.min_withdrawal_amount}</strong> minimum withdrawal amount?
+                  <strong>{selected.business_volume_amount_in_sales}</strong> minimum withdrawal amount?
                 </p>
                 <div className="flex gap-4 mt-4">
                   <button

@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { getAuthToken } from "@/app/auth/login/api";
 import { toast } from "react-toastify";
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -243,8 +242,6 @@ export default function UsersPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <Card>
-          <CardContent>
         <div className="w-full min-w-full justify-center items-center">
           <table className="min-w-full border border-gray-300 rounded shadow-xs">
             <thead className="min-w-full">
@@ -336,8 +333,6 @@ export default function UsersPage() {
             </button>
           </div>
         </div>
-        </CardContent>
-        </Card>
       )}
 
       {/* ✅ Modal */}
