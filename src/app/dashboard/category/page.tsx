@@ -10,7 +10,7 @@ import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL; // ✅ change to your Django endpoint
 
-// ✅ Zod schema for validation
+//  Zod schema for validation
 const categorySchema = z.object({
   name: z.string().min(2, "Name is required"),
   description: z.string().optional(),
